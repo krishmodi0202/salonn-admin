@@ -46,9 +46,10 @@ const AdminDashboard = () => {
     fetchDashboardData();
   }, []);
 
-  // Auto-refresh every 30 seconds
+  // Auto-refresh using configurable interval
   useEffect(() => {
-    const interval = setInterval(fetchDashboardData, 30000);
+    const refreshInterval = parseInt(process.env.REACT_APP_REFRESH_INTERVAL) || 30000;
+    const interval = setInterval(fetchDashboardData, refreshInterval);
     return () => clearInterval(interval);
   }, []);
 

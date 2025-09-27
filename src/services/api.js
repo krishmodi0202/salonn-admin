@@ -1,8 +1,9 @@
-const API_BASE_URL = 'http://localhost:5000' || 'https://salonn-backend.onrender.com';
+// Get API base URL from environment variables with fallback
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const API_FALLBACK_URL = process.env.REACT_APP_API_FALLBACK_URL || 'https://salonn-backend.onrender.com';
 
 class ApiService {
   async request(endpoint, options = {}) {
-    const url = `${API_BASE_URL}${endpoint}`;
     const config = {
       headers: {
         'Content-Type': 'application/json',
@@ -11,17 +12,40 @@ class ApiService {
       ...options,
     };
 
+    // Try primary API URL first
     try {
-      const response = await fetch(url, config);
+      const primaryUrl = `${API_BASE_URL}${endpoint}`;
+      console.log(`Attempting API request to: ${primaryUrl}`);
+      
+      const response = await fetch(primaryUrl, config);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       return await response.json();
-    } catch (error) {
-      console.error('API request failed:', error);
-      throw error;
+    } catch (primaryError) {
+      console.warn('Primary API failed, trying fallback:', primaryError.message);
+      
+      // Try fallback API URL if primary fails
+      try {
+        const fallbackUrl = `${API_FALLBACK_URL}${endpoint}`;
+        console.log(`Attempting fallback API request to: ${fallbackUrl}`);
+        
+        const response = await fetch(fallbackUrl, config);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return await response.json();
+      } catch (fallbackError) {
+        console.error('Both primary and fallback API requests failed:', {
+          primary: primaryError.message,
+          fallback: fallbackError.message
+        });
+        throw new Error(`API request failed. Primary: ${primaryError.message}, Fallback: ${fallbackError.message}`);
+      }
     }
   }
 
