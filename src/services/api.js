@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = 'http://localhost:5000' || 'https://salonn-backend.onrender.com';
 
 class ApiService {
   async request(endpoint, options = {}) {
